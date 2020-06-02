@@ -13,25 +13,35 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <html>
-  <head>
+
+<head>
     <title>Cam Scroller</title>
     <style>
-      body {
-        width: 250px;
-      }
-  </style>
-  </head>
-  <body>
+        body {
+            width: 250px;
+        }
+    </style>
+</head>
+
+<body>
     <div>
-      <video autoplay="true" id="webcamVideo" width="227" height ="227"></video>
+        <button id="play">play</button>
+        <button id="stop">stop</button>
+        <button id="volumeup">volume up</button>
+        <button id="volumedown">volume down</button>
+        <button id="seek">seek</button>
+        <button id="rewind">rewind</button>
+
+        <video autoplay="true" id="webcamVideo" width="227" height="227"></video>
     </div>
     <div id="traintext"></div>
     <button type="button" id="capture">Capture</button>
     <div>
-      <input type="checkbox" id="infer">
-      <label for="infer">Enable scrolling by gesture</label>
+        <input type="checkbox" id="infer">
+        <label for="infer">Enable scrolling by gesture</label>
     </div>
     <div id="capturedimage"></div>
     <script src="popup.js"></script>
-  </body>
+</body>
+
 </html>
