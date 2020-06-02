@@ -1,3 +1,6 @@
+const vid = document.querySelector('#webcamVideo');
+
+const image = document.querySelector("#capturedimage");
 
 // Do first-time setup to gain access to webcam, if necessary.
 chrome.runtime.onInstalled.addListener((details) => {
@@ -10,6 +13,11 @@ chrome.runtime.onInstalled.addListener((details) => {
   });
 });
 
+function vidOff() {
+  vid.pause();
+  vid.src = "";
+  vid.srcObject.getTracks()[0].stop();
+}
 // Mapping of training commands to KNN class indices. Special commands for
 // turning off training and for saving training weights are given negative
 // indices to signify that no training is to occur.
@@ -27,7 +35,7 @@ let classIndexToTrain = -1;
 
 // True if currently in 'infer' mode, meaning that the webcam is controlling
 // scrolling.
-let infer = true;
+let infer = false;
 
 // The previously-predicted class when in 'infer' mode.
 let previousPredictedIndex = -1;
@@ -39,9 +47,6 @@ chrome.storage.local.get('infer', items => {
 
 // Listener for commands from the extension popup (controller) page.
 
-const vid = document.querySelector('#webcamVideo');
-
-const image = document.querySelector("#capturedimage");
 
 // Setup webcam, initialize the KNN classifier model and start the work loop.
 async function setupCam() {
@@ -52,28 +57,40 @@ async function setupCam() {
   }).catch((error) => {
     console.warn(error);
   });
-    setInterval(function(){ 
-        //code goes here that will be run every 5 seconds. 
-        // handleInfer(2);
-        getImage()
-    }, 500);
   }
   
-  // If cam acecss has already been granted to this extension, setup webcam.
-  chrome.storage.local.get('camAccess', items => {
-    if (!!items['camAccess']) {
-      console.log('cam access already exists');
-      setupCam();
-    }
-  });
+
   
   // If cam acecss gets granted to this extension, setup webcam.
   chrome.storage.onChanged.addListener((changes, namespace) => {
-    if ('camAccess' in changes) {
-      console.log('cam access granted');
-      setupCam();
+
+  if ('infer' in changes) {
+    var infer_state = changes['infer'].newValue;
+    if (infer_state){
+      // If cam acecss has already been granted to this extension, setup webcam.
+      chrome.storage.local.get('camAccess', items => {
+        if (!!items['camAccess']) {
+          console.log('cam access already exists');
+          setupCam();
+        }
+      });
+
+      // chrome.tabs.create({
+      //   url: chrome.extension.getURL('background.html'),
+      //   active: true
+      // });
+      
+      setInterval(function(){ 
+        //code goes here that will be run every 5 seconds. 
+        // handleInfer(2);
+        getImage()
+    }, 1000);
+    }else{
+      vidOff();
     }
-  });
+
+  }
+});
 var getImage = function() {
     // text.innerHTML = "press";
     var canvas = document.createElement("canvas");
