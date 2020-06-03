@@ -2,6 +2,7 @@ const vid = document.querySelector('#webcamVideo');
 
 const image = document.querySelector("#capturedimage");
 
+var intervalId=null;
 // Do first-time setup to gain access to webcam, if necessary.
 chrome.runtime.onInstalled.addListener((details) => {
   if (details.reason.search(/install/g) === -1) {
@@ -16,18 +17,12 @@ chrome.runtime.onInstalled.addListener((details) => {
 function vidOff() {
   vid.pause();
   vid.src = "";
-  vid.srcObject.getTracks()[0].stop();
+  if(vid.srcObject) vid.srcObject.getTracks()[0].stop();
 }
 // Mapping of training commands to KNN class indices. Special commands for
 // turning off training and for saving training weights are given negative
 // indices to signify that no training is to occur.
-const optionToClassIndex = {
-  'save': -2,
-  'off': -1,
-  'noaction': 0,
-  'down': 1,
-  'up': 2
-};
+
 const classIndexToDirection = [null, 'down', 'up'];
 
 // Current class index being trained, negative means not training.
@@ -74,19 +69,28 @@ async function setupCam() {
           setupCam();
         }
       });
-
-      // chrome.tabs.create({
-      //   url: chrome.extension.getURL('background.html'),
-      //   active: true
-      // });
       
-      setInterval(function(){ 
-        //code goes here that will be run every 5 seconds. 
-        // handleInfer(2);
-        getImage()
-    }, 1000);
+      chrome.tabs.create({
+        url: chrome.extension.getURL('background.html'),
+        active: true
+      });
+      
+      console.log("ON");
+      console.log(intervalId);
+      
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+      intervalId = setInterval(()=>{ 
+        imageSrc = getImage();
+        handleSubmit(imageSrc);
+      }, 1000);
     }else{
       vidOff();
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+      console.log('OFF');
     }
 
   }
@@ -99,8 +103,9 @@ var getImage = function() {
 
     var img = document.createElement("img");
     img.src = canvas.toDataURL();
-    console.log(img.src)
-    image.innerHTML = '<img src="' + img.src + '" width="299px" height="299px" />';;
+    // console.log(img.src)
+    image.innerHTML = '<img src="' + img.src + '" width="299px" height="299px" />';
+    return img.src
     // text.innerHTML = img.src;
 };
   
@@ -139,4 +144,23 @@ function handleInfer(classIndex) {
       chrome.tabs.sendMessage(tabId, info);
     });
   // }
+}
+function handleSubmit(imageSrc) {
+  // event.preventDefault();
+  var url = "http://localhost:5000/movie_controller";
+  console.log(url);
+  var json = {imageSrc:imageSrc};
+  json = JSON.stringify(json);
+
+  console.log(json);    
+  fetch(url,{
+      method: 'POST',
+      body: json,
+      headers: {'Content-Type': 'application/json',"Access-Control-Allow-Origin": "*"},
+      crossDomain:true
+  }).then(res => res.json()).then(result => {
+      console.log('done !');
+      // console.log();
+
+  })
 }
