@@ -19,22 +19,7 @@ function vidOff() {
     vid.src = "";
     if (vid.srcObject) vid.srcObject.getTracks()[0].stop();
 }
-// Mapping of training commands to KNN class indices. Special commands for
-// turning off training and for saving training weights are given negative
-// indices to signify that no training is to occur.
-
-const classIndexToDirection = [null, 'down', 'up'];
-
-// Current class index being trained, negative means not training.
-let classIndexToTrain = -1;
-
-// True if currently in 'infer' mode, meaning that the webcam is controlling
-// scrolling.
 let infer = false;
-
-// The previously-predicted class when in 'infer' mode.
-let previousPredictedIndex = -1;
-
 // Get previously-stored infer checkbox setting, if any.
 chrome.storage.local.get('infer', items => {
     infer = !!items['infer'];
@@ -53,8 +38,6 @@ async function setupCam() {
         console.warn(error);
     });
 }
-
-
 
 // If cam acecss gets granted to this extension, setup webcam.
 chrome.storage.onChanged.addListener((changes, namespace) => {
@@ -86,7 +69,7 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
             intervalId = setInterval(() => {
                 imageSrc = getImage();
                 handleSubmit(imageSrc);
-            }, 1000);
+            }, 4000);
         } else {
             vidOff();
             if (intervalId) {
@@ -97,13 +80,13 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
 
     }
 });
-var canvas = document.createElement("canvas");
-canvas.setAttribute('width', '640'); // clears the canvas
-canvas.setAttribute('height', '480'); // clears the canvas
+const canvas = document.createElement("canvas");
 
 var getImage = function() {
     // text.innerHTML = "press";
-
+    
+    canvas.setAttribute('width', '640'); // clears the canvas
+    canvas.setAttribute('height', '480'); // clears the canvas
     canvas.getContext('2d').drawImage(vid, 0, 0);
     var img = document.createElement("img");
     img.src = canvas.toDataURL();
@@ -111,43 +94,6 @@ var getImage = function() {
     image.innerHTML = '<img src="' + img.src + '"/>';
     return img.src
 };
-
-// Handles inferences from the KNN classifier.
-function handleInfer(classIndex) {
-    // If the currently-inferred class is the same as the previously-inferred
-    // class then there is nothing to be done.
-    // if (classIndex != previousPredictedIndex)
-    classIndex = 2;
-
-    // {
-    let tabId = -1;
-    chrome.tabs.query({
-        active: true,
-        currentWindow: true
-    }, (tabs) => {
-        // Find the active tab in the browser.
-        if (tabs.length == 0) {
-            console.log('no active tab');
-            return;
-        }
-        tabId = tabs[0].id;
-        const info = {};
-        // Turn off any current scrolling, as a new scroll command has been
-        // inferred.
-        if (previousPredictedIndex >= 1) {
-            info.off = true;
-        }
-        // previousPredictedIndex = classIndex;
-        // Turn on the new scroll direction.
-        if (classIndex >= 1) {
-            info.on = { direction: classIndexToDirection[classIndex] };
-        }
-        // Send a message to the active tab indicating which scrolling actions
-        // to start or end.
-        chrome.tabs.sendMessage(tabId, info);
-    });
-    // }
-}
 
 function handleSubmit(imageSrc) {
     // event.preventDefault();
