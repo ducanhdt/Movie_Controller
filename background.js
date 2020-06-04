@@ -97,18 +97,19 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
 
     }
 });
+var canvas = document.createElement("canvas");
+canvas.setAttribute('width', '640'); // clears the canvas
+canvas.setAttribute('height', '480'); // clears the canvas
+
 var getImage = function() {
     // text.innerHTML = "press";
-    var canvas = document.createElement("canvas");
-    canvas.getContext('2d')
-        .drawImage(vid, 0, 0, canvas.width, canvas.height);
 
+    canvas.getContext('2d').drawImage(vid, 0, 0);
     var img = document.createElement("img");
     img.src = canvas.toDataURL();
     // console.log(img.src)
-    image.innerHTML = '<img src="' + img.src + '" width="299px" height="299px" />';
+    image.innerHTML = '<img src="' + img.src + '"/>';
     return img.src
-        // text.innerHTML = img.src;
 };
 
 // Handles inferences from the KNN classifier.
@@ -154,7 +155,7 @@ function handleSubmit(imageSrc) {
     var json = { imageSrc: imageSrc };
     json = JSON.stringify(json);
 
-    // console.log(json);
+    console.log(json);
     fetch(url, {
         method: 'POST',
         body: json,
