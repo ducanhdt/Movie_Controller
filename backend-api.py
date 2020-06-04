@@ -13,7 +13,7 @@ def text_summary():
     imageSrc = content['imageSrc']
     # for i in content:
     #     print(i)
-    result = np.random.choice(range(5))
+    result = np.random.choice(range(6))
     # result = 'xin chào đức anh'
     print(result)
     return jsonify({"content":str(result)})

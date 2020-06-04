@@ -2,22 +2,22 @@ const vid = document.querySelector('#webcamVideo');
 
 const image = document.querySelector("#capturedimage");
 
-var intervalId=null;
+var intervalId = null;
 // Do first-time setup to gain access to webcam, if necessary.
 chrome.runtime.onInstalled.addListener((details) => {
-  if (details.reason.search(/install/g) === -1) {
-    return;
-  }
-  chrome.tabs.create({
-    url: chrome.extension.getURL('welcome.html'),
-    active: true
-  });
+    if (details.reason.search(/install/g) === -1) {
+        return;
+    }
+    chrome.tabs.create({
+        url: chrome.extension.getURL('welcome.html'),
+        active: true
+    });
 });
 
 function vidOff() {
-  vid.pause();
-  vid.src = "";
-  if(vid.srcObject) vid.srcObject.getTracks()[0].stop();
+    vid.pause();
+    vid.src = "";
+    if (vid.srcObject) vid.srcObject.getTracks()[0].stop();
 }
 // Mapping of training commands to KNN class indices. Special commands for
 // turning off training and for saving training weights are given negative
@@ -37,63 +37,65 @@ let previousPredictedIndex = -1;
 
 // Get previously-stored infer checkbox setting, if any.
 chrome.storage.local.get('infer', items => {
-  infer = !!items['infer'];
+    infer = !!items['infer'];
 });
 
 // Listener for commands from the extension popup (controller) page.
 
-
+let createtab = true;
 // Setup webcam, initialize the KNN classifier model and start the work loop.
 async function setupCam() {
-  navigator.mediaDevices.getUserMedia({
-    video: true
-  }).then(mediaStream => {
-    vid.srcObject = mediaStream;
-  }).catch((error) => {
-    console.warn(error);
-  });
-  }
-  
+    navigator.mediaDevices.getUserMedia({
+        video: true
+    }).then(mediaStream => {
+        vid.srcObject = mediaStream;
+    }).catch((error) => {
+        console.warn(error);
+    });
+}
 
-  
-  // If cam acecss gets granted to this extension, setup webcam.
-  chrome.storage.onChanged.addListener((changes, namespace) => {
 
-  if ('infer' in changes) {
-    var infer_state = changes['infer'].newValue;
-    if (infer_state){
-      // If cam acecss has already been granted to this extension, setup webcam.
-      chrome.storage.local.get('camAccess', items => {
-        if (!!items['camAccess']) {
-          console.log('cam access already exists');
-          setupCam();
+
+// If cam acecss gets granted to this extension, setup webcam.
+chrome.storage.onChanged.addListener((changes, namespace) => {
+
+    if ('infer' in changes) {
+        var infer_state = changes['infer'].newValue;
+        if (infer_state) {
+            // If cam acecss has already been granted to this extension, setup webcam.
+            chrome.storage.local.get('camAccess', items => {
+                if (!!items['camAccess']) {
+                    console.log('cam access already exists');
+                    setupCam();
+                }
+            });
+            // if (createtab) {
+            //     chrome.tabs.create({
+            //         url: chrome.extension.getURL('background.html'),
+            //         active: true
+            //     });
+            //     createtab = false;
+            // }
+
+            console.log("ON");
+            console.log(intervalId);
+
+            if (intervalId) {
+                clearInterval(intervalId);
+            }
+            intervalId = setInterval(() => {
+                imageSrc = getImage();
+                handleSubmit(imageSrc);
+            }, 1000);
+        } else {
+            vidOff();
+            if (intervalId) {
+                clearInterval(intervalId);
+            }
+            console.log('OFF');
         }
-      });
-      
-      chrome.tabs.create({
-        url: chrome.extension.getURL('background.html'),
-        active: true
-      });
-      
-      console.log("ON");
-      console.log(intervalId);
-      
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
-      intervalId = setInterval(()=>{ 
-        imageSrc = getImage();
-        handleSubmit(imageSrc);
-      }, 1000);
-    }else{
-      vidOff();
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
-      console.log('OFF');
-    }
 
-  }
+    }
 });
 var getImage = function() {
     // text.innerHTML = "press";
@@ -106,61 +108,103 @@ var getImage = function() {
     // console.log(img.src)
     image.innerHTML = '<img src="' + img.src + '" width="299px" height="299px" />';
     return img.src
-    // text.innerHTML = img.src;
+        // text.innerHTML = img.src;
 };
-  
-  // Handles inferences from the KNN classifier.
+
+// Handles inferences from the KNN classifier.
 function handleInfer(classIndex) {
-  // If the currently-inferred class is the same as the previously-inferred
-  // class then there is nothing to be done.
-  // if (classIndex != previousPredictedIndex)
-  classIndex =2;
-  
-  // {
+    // If the currently-inferred class is the same as the previously-inferred
+    // class then there is nothing to be done.
+    // if (classIndex != previousPredictedIndex)
+    classIndex = 2;
+
+    // {
     let tabId = -1;
     chrome.tabs.query({
-      active: true,
-      currentWindow: true
+        active: true,
+        currentWindow: true
     }, (tabs) => {
-      // Find the active tab in the browser.
-      if (tabs.length == 0) {
-        console.log('no active tab');
-        return;
-      }
-      tabId = tabs[0].id;
-      const info = {};
-      // Turn off any current scrolling, as a new scroll command has been
-      // inferred.
-      if (previousPredictedIndex >= 1) {
-        info.off = true;
-      }
-      // previousPredictedIndex = classIndex;
-      // Turn on the new scroll direction.
-      if (classIndex >= 1) {
-        info.on = {direction: classIndexToDirection[classIndex]};
-      }
-      // Send a message to the active tab indicating which scrolling actions
-      // to start or end.
-      chrome.tabs.sendMessage(tabId, info);
+        // Find the active tab in the browser.
+        if (tabs.length == 0) {
+            console.log('no active tab');
+            return;
+        }
+        tabId = tabs[0].id;
+        const info = {};
+        // Turn off any current scrolling, as a new scroll command has been
+        // inferred.
+        if (previousPredictedIndex >= 1) {
+            info.off = true;
+        }
+        // previousPredictedIndex = classIndex;
+        // Turn on the new scroll direction.
+        if (classIndex >= 1) {
+            info.on = { direction: classIndexToDirection[classIndex] };
+        }
+        // Send a message to the active tab indicating which scrolling actions
+        // to start or end.
+        chrome.tabs.sendMessage(tabId, info);
     });
-  // }
+    // }
 }
+
 function handleSubmit(imageSrc) {
-  // event.preventDefault();
-  var url = "http://localhost:5000/movie_controller";
-  console.log(url);
-  var json = {imageSrc:imageSrc};
-  json = JSON.stringify(json);
+    // event.preventDefault();
+    var url = "http://localhost:5000/movie_controller";
+    var json = { imageSrc: imageSrc };
+    json = JSON.stringify(json);
 
-  console.log(json);    
-  fetch(url,{
-      method: 'POST',
-      body: json,
-      headers: {'Content-Type': 'application/json',"Access-Control-Allow-Origin": "*"},
-      crossDomain:true
-  }).then(res => res.json()).then(result => {
-      console.log('done !');
-      // console.log();
+    // console.log(json);
+    fetch(url, {
+        method: 'POST',
+        body: json,
+        headers: { 'Content-Type': 'application/json', "Access-Control-Allow-Origin": "*" },
+        crossDomain: true
+    }).then(res => res.json()).then(result => {
+        console.log(typeof result['content']);
+        var str = result['content'];
+        if (str == "0") {
+            volumeDownVid();
+        } else if (str == "1") {
+            rewindVid();
+        } else if (str == "2") {
+            volumeUpVid();
+        } else if (str == "3") {
+            seekVid();
+        } else if (str == "4") {
+            playStopVid();
+        }
+    })
+}
 
-  })
+const youtube = 'document.getElementsByClassName("video-stream html5-main-video")[0]';
+
+function playStopVid() {
+    chrome.tabs.executeScript({
+        code: 'if (' + youtube + '.paused) { ' + youtube + '.play();}else {' + youtube + '.pause(); }',
+    });
+}
+
+function volumeUpVid() {
+    chrome.tabs.executeScript({
+        code: youtube + '.volume = ' + youtube + '.volume > 0.9 ? 1 : ' + youtube + '.volume + 0.1 ',
+    });
+}
+
+function volumeDownVid() {
+    chrome.tabs.executeScript({
+        code: youtube + '.volume = ' + youtube + '.volume < 0.1 ? ' + youtube + '.volume: ' + youtube + '.volume - 0.1 ',
+    });
+}
+
+function seekVid() {
+    chrome.tabs.executeScript({
+        code: 'var player = ' + youtube + ';var curT = player.currentTime;player.currentTime = curT < player.duration - 10 ? curT + 10 : player.duration ',
+    });
+}
+
+function rewindVid() {
+    chrome.tabs.executeScript({
+        code: 'var player = ' + youtube + ';var curT = player.currentTime;player.currentTime = curT < 10 ? 0 : curT - 10',
+    });
 }
