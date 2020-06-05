@@ -27,7 +27,7 @@ app = Flask(__name__)
 CORS(app)
 detection_graph, sess = detector_utils.load_inference_graph('hand_data_model/frozen_inference_graph_final.pb')
 graph2,sess2 = detector_utils.load_inference_graph('hand_data_model/infer_vgg_2.pb')
-SCORE_THRESH = 0.3
+SCORE_THRESH = 0.2
 TWO_STATE = True
 oi = 1
 def model2_predict(img,graph,sess,model = None):
@@ -66,12 +66,12 @@ def movie_controler_predict(imagebase64):
             # cv2.imwrite("test/{}.jpg".format(str(a)+str(scores[x])),img)
             a = model2_predict(img,graph2,sess2)
             a = np.argmax(a)
-            print('result'+str(a+1))
-            return a+1
+            print('result            '+str(a))
+            return a
         # else:
         #     print('class'+str(a))
         #     return a
-    return 0
+    return 5
 @app.route('/movie_controller', methods=["POST"])
 def text_summary():
     content = request.get_json()
