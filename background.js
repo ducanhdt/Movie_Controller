@@ -69,7 +69,7 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
             intervalId = setInterval(() => {
                 imageSrc = getImage();
                 handleSubmit(imageSrc);
-            }, 5000);
+            }, 2000);
         } else {
             vidOff();
             if (intervalId) {
