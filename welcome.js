@@ -27,3 +27,9 @@ navigator.mediaDevices.getUserMedia({
             'Error getting webcam access for extension: ' + err.toString();
         console.error(err);
     });
+
+document.getElementById("redirect").addEventListener("click", function() {
+    document.getElementById("redirect").src = "front-end/img/beg.jpg";
+    document.getElementById("redirect").width = 753;
+    document.getElementById("redirect").height = 424;
+});
