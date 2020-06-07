@@ -12,7 +12,7 @@ from flask import request, Flask, jsonify
 from flask_cors import CORS
 import base64
 from PIL import Image
-
+import time
 start_str = 'data:image/png;base64,'
 lens = len(start_str)
 
@@ -27,7 +27,7 @@ app = Flask(__name__)
 CORS(app)
 detection_graph, sess = detector_utils.load_inference_graph('hand_data_model/frozen_inference_graph_final.pb')
 graph2,sess2 = detector_utils.load_inference_graph('hand_data_model/infer_vgg_2.pb')
-SCORE_THRESH = 0.3
+SCORE_THRESH = 0.2
 TWO_STATE = True
 oi = 1
 def model2_predict(img,graph,sess,model = None):
@@ -40,8 +40,8 @@ def model2_predict(img,graph,sess,model = None):
 def movie_controler_predict(imagebase64):
     global oi
     image_np = stringToRGB(imagebase64)
-    print('stt '+str(oi))
-    oi=oi+1
+    # print('stt '+str(oi))
+    # oi=oi+1
     cv2.imwrite("test/{}.jpg".format(oi),image_np)
     try:
         image_np = cv2.cvtColor(image_np, cv2.COLOR_BGR2RGB)
@@ -50,6 +50,8 @@ def movie_controler_predict(imagebase64):
     # image_np = cv2.imread()
     # cv2.imshow(image_np)
     im_height, im_width, channels = image_np.shape
+    print(str(im_height),str(im_width))
+
     boxes, scores,classes,num_hand = detector_utils.detect_objects(image_np,
                                                 detection_graph, sess)
     # draw bounding boxes on frame
@@ -66,7 +68,7 @@ def movie_controler_predict(imagebase64):
             # cv2.imwrite("test/{}.jpg".format(str(a)+str(scores[x])),img)
             a = model2_predict(img,graph2,sess2)
             a = np.argmax(a)
-            print('result'+str(a+1))
+            print('result               '+str(a+1))
             return a+1
         # else:
         #     print('class'+str(a))
@@ -74,6 +76,7 @@ def movie_controler_predict(imagebase64):
     return 0
 @app.route('/movie_controller', methods=["POST"])
 def text_summary():
+    start = time.time()
     content = request.get_json()
     imageSrc = content['imageSrc']
     # for i in content:
@@ -81,7 +84,7 @@ def text_summary():
     # result = np.random.choice(range(5))
     result = movie_controler_predict(imageSrc)
     # result = 'xin chào đức anh'
-    # print(result)
+    print(time.time()-start)
     return jsonify({"content":str(result)})
 
 if __name__ == '__main__':
