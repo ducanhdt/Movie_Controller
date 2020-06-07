@@ -19,11 +19,6 @@ function turnOffInferring() {
 }
 
 function inferButtonClicked() {
-    // if (document.getElementById('infer').checked===true){
-    //   turnOffInferring();
-    // }else{
-    //   turnOnInferring();
-    // }
     if (document.getElementById('infer').checked) {
         document.getElementById('capture').innerHTML = document.getElementById('infer').checked;
         turnOnInferring()
@@ -66,5 +61,3 @@ chrome.storage.local.get('infer', items => {
 });
 
 document.getElementById('infer').onclick = inferButtonClicked;
-// document.getElementById('train').onclick = trainClicked;
-

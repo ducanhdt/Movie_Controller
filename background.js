@@ -52,13 +52,6 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
                     setupCam();
                 }
             });
-            // if (createtab) {
-            //     chrome.tabs.create({
-            //         url: chrome.extension.getURL('background.html'),
-            //         active: true
-            //     });
-            //     createtab = false;
-            // }
 
             console.log("ON");
             console.log(intervalId);
@@ -83,8 +76,6 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
 const canvas = document.createElement("canvas");
 
 var getImage = function() {
-    // text.innerHTML = "press";
-
     canvas.setAttribute('width', '640'); // clears the canvas
     canvas.setAttribute('height', '480'); // clears the canvas
     canvas.getContext('2d').drawImage(vid, 0, 0);
@@ -100,16 +91,13 @@ function handleSubmit(imageSrc) {
     var json = { imageSrc: imageSrc };
     json = JSON.stringify(json);
 
-    console.log("start:    " + new Date().getTime());
     fetch(url, {
         method: 'POST',
         body: json,
         headers: { 'Content-Type': 'application/json', "Access-Control-Allow-Origin": "*" },
         crossDomain: true
     }).then(res => res.json()).then(result => {
-        console.log("end1:     " + new Date().getTime());
         var str = result['content'];
-        console.log(str);
         if (str == "0") {
             volumeDownVid();
         } else if (str == "1") {
@@ -121,7 +109,6 @@ function handleSubmit(imageSrc) {
         } else if (str == "4") {
             playStopVid();
         }
-        console.log("end2:     " + new Date().getTime());
     })
 }
 
