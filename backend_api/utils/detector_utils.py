@@ -59,7 +59,16 @@ def draw_box_on_image(num_hands_detect, score_thresh, scores, boxes, im_width, i
         p1 = (int(left), int(top))
         p2 = (int(right), int(bottom))
         # cv2.rectangle(image_np, p1, p2, (77, 255, 9), 3, 1)
-        return image_np[int(top):int(bottom),int(left):int(right)]
+        heigh_mid = (top+bottom)/2
+        width_mid = (right+left)/2
+        if (top - bottom) >= (right - left):
+            length = (top - bottom)*0.75
+        else:
+            length = (right - left)*0.75
+        l1,l2,_ = np.shape(image_np)
+        crop_image = image_np[max(0,int(heigh_mid-length)):min(l1,int(heigh_mid+length)),max(0,int(width_mid - length)):min(l2,int(width_mid + length))]
+        # return image_np[int(top):int(bottom),int(left):int(right)]
+        return crop_image
 
 def save_box(file,score_thresh, scores, boxes, im_width, im_height,image_np):
     if (max(scores) > score_thresh):
