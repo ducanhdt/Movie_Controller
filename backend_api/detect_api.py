@@ -26,7 +26,7 @@ def stringToRGB(base64_string):
 app = Flask(__name__)
 CORS(app)
 detection_graph, sess = detector_utils.load_inference_graph('hand_data_model/frozen_inference_graph_final.pb')
-graph2,sess2 = detector_utils.load_inference_graph('hand_data_model/vgg_cleand.pb')
+graph2,sess2 = detector_utils.load_inference_graph('hand_data_model/lam_final.pb')
 SCORE_THRESH = 0.3
 TWO_STATE = True
 oi = 1
@@ -43,10 +43,10 @@ def movie_controler_predict(imagebase64):
     # print('stt '+str(oi))
     # oi=oi+1
     cv2.imwrite("test/{}.jpg".format(oi),image_np)
-    try:
-        image_np = cv2.cvtColor(image_np, cv2.COLOR_BGR2RGB)
-    except:
-        print("Error converting to RGB")
+    # try:
+    #     image_np = cv2.cvtColor(image_np, cv2.COLOR_BGR2RGB)
+    # except:
+    #     print("Error converting to RGB")
     # image_np = cv2.imread()
     # cv2.imshow(image_np)
     im_height, im_width, channels = image_np.shape
@@ -64,7 +64,7 @@ def movie_controler_predict(imagebase64):
         print('predict')
         a= classes[x]
         if TWO_STATE:
-            img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+            # img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
             cv2.imwrite("test/{}.jpg".format(str(a)+str(scores[x])),img)
             a = model2_predict(img,graph2,sess2)
             a = np.argmax(a)
