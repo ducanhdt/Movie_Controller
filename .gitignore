@@ -1,2 +1,4 @@
 /.vscode
 /backend_api
+/backend_api/utils/__pycache__
+/backend_api/protos/__pycache__

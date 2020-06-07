@@ -68,12 +68,17 @@ def movie_controler_predict(imagebase64):
             # cv2.imwrite("test/{}.jpg".format(str(a)+str(scores[x])),img)
             a = model2_predict(img,graph2,sess2)
             a = np.argmax(a)
+<<<<<<< HEAD
             print('result               '+str(a+1))
             return a+1
+=======
+            print('result            '+str(a))
+            return a
+>>>>>>> e45e0a9094f732b9d5039ee3d38e9a7de237184e
         # else:
         #     print('class'+str(a))
         #     return a
-    return 0
+    return 5
 @app.route('/movie_controller', methods=["POST"])
 def text_summary():
     start = time.time()

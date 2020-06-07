@@ -1,6 +1,6 @@
 {
     "manifest_version": 2,
-    "name": "Movie Controler",
+    "name": "Movie Controller",
     "description": "This extension lets a user control youtube video using webcam gestures.",
     "version": "0.1",
     "browser_action": {
@@ -18,8 +18,11 @@
     },
     "permissions": [
         "activeTab",
+        "tabs",
         "storage",
-        "unlimitedStorage"
-    ],
-    "content_security_policy": "default-src 'self'; connect-src * data: blob: filesystem:; style-src 'self' data: 'unsafe-inline';img-src 'self' data:;frame-src 'self' data:;font-src 'self' data:;media-src * data: blob: filesystem:;"
+        "unlimitedStorage",
+        "notifications",
+        "http://*/*",
+        "https://*/*"
+    ]
 }
