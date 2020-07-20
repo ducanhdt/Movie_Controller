@@ -27,7 +27,7 @@ app = Flask(__name__)
 CORS(app)
 detection_graph, sess = detector_utils.load_inference_graph('hand_data_model/frozen_inference_graph_final.pb')
 graph2,sess2 = detector_utils.load_inference_graph('hand_data_model/lam_final.pb')
-SCORE_THRESH = 0.3
+SCORE_THRESH = 0.5
 TWO_STATE = True
 oi = 1
 def model2_predict(img,graph,sess,model = None):
@@ -65,11 +65,15 @@ def movie_controler_predict(imagebase64):
         a= classes[x]
         if TWO_STATE:
             # img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-            cv2.imwrite("test/{}.jpg".format(str(a)+str(scores[x])),img)
             a = model2_predict(img,graph2,sess2)
-            a = np.argmax(a)
-            print('result            '+str(a))
-            return a
+            label = np.argmax(a)
+            print('result            '+str(label))
+            print("score:" + str(np.max(a)))
+            if np.max(a)>0.5:
+                cv2.imwrite("test/{}.jpg".format(str(label)+str(scores[x])),img)
+                return label
+            else:
+                return 5
         # else:
         #     print('class'+str(a))
         #     return a
@@ -84,7 +88,7 @@ def text_summary():
     # result = np.random.choice(range(5))
     result = movie_controler_predict(imageSrc)
     # result = 'xin chào đức anh'
-    print(time.time()-start)
+    print("time:" + str(time.time()-start))
     return jsonify({"content":str(result)})
 
 if __name__ == '__main__':
