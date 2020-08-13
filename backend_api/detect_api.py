@@ -40,15 +40,7 @@ def model2_predict(img,graph,sess,model = None):
 def movie_controler_predict(imagebase64):
     global oi
     image_np = stringToRGB(imagebase64)
-    # print('stt '+str(oi))
-    # oi=oi+1
     cv2.imwrite("test/{}.jpg".format(oi),image_np)
-    # try:
-    #     image_np = cv2.cvtColor(image_np, cv2.COLOR_BGR2RGB)
-    # except:
-    #     print("Error converting to RGB")
-    # image_np = cv2.imread()
-    # cv2.imshow(image_np)
     im_height, im_width, channels = image_np.shape
     print(str(im_height),str(im_width))
 
@@ -74,29 +66,15 @@ def movie_controler_predict(imagebase64):
                 return label
             else:
                 return 5
-        # else:
-        #     print('class'+str(a))
-        #     return a
     return 5
 @app.route('/movie_controller', methods=["POST"])
 def text_summary():
     start = time.time()
     content = request.get_json()
     imageSrc = content['imageSrc']
-    # for i in content:
-    #     print(i)
-    # result = np.random.choice(range(5))
     result = movie_controler_predict(imageSrc)
-    # result = 'xin chào đức anh'
     print("time:" + str(time.time()-start))
     return jsonify({"content":str(result)})
 
 if __name__ == '__main__':
     app.run(host= '0.0.0.0',debug=True)
-
-
-# import requests
-# res = requests.post('http://localhost:5000/text_summary', json={"mytext":"trường tiểu. tôi không. tôi có. tôi thường","mode":"d2v"})
-# if res.ok:
-#     print(res.json())
-        
